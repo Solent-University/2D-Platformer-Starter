@@ -6,6 +6,9 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 1;
+    public float acceleration = 1;
+    public float decelerationMultiplier = 1;
+    public float sprintSpeedMultiplier = 2;
     public float jumpSpeed = 1;
     public int numberOfJumps = 2;
     public float maxJumpTime = 0.1f;
@@ -15,10 +18,17 @@ public class PlayerController : MonoBehaviour
     private CapsuleCollider2D collider;
 
     private Vector2 moveInput;
+    private bool sprintInput;
     private bool jumpInput;
     private bool jumpPressed;
     private bool jumpReleased;
+
+    private bool isWalledRight;
+    private bool isWalledLeft;
     private bool isGrounded;
+    private bool isWallJumping;
+
+    private float gravityScale;
     private bool canJump;
     private int jumpsLeft;
     private float xVelocity;
@@ -29,6 +39,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         collider = GetComponent<CapsuleCollider2D>();
+        gravityScale = rb.gravityScale;
     }
 
     private void FixedUpdate()
@@ -38,16 +49,36 @@ public class PlayerController : MonoBehaviour
         // Reset jumping if on ground
         if (isGrounded)
         {
-            timeInJump = 0;
-            jumpsLeft = numberOfJumps;
+            ResetJumps();
+            isWallJumping = false;
+        }
+
+        if (isWalledLeft || isWalledRight)
+        {
+            HandleWallHangFixed();
+        }
+        else if (jumpInput || jumpReleased)
+        {
+            HandleJumpFixed();
         }
 
         // Horizontal movement
-        rb.linearVelocityX = moveInput.x * moveSpeed;
-
-        if (jumpInput || jumpReleased)
+        if (!isWallJumping)
         {
-            HandleJumpFixed();
+            // I hate this line but it handles no input and opposite input for deceleration
+            if (moveInput.x == 0 || Mathf.Abs(rb.linearVelocityX) > 0.1f && Mathf.Sign(moveInput.x) != Mathf.Sign(rb.linearVelocityX))
+            {
+                // Deceleration
+                if (isGrounded)
+                {
+                    DecelerateFixed();
+                }
+            }
+            else
+            {
+                // Acceleration
+                MoveFixed(moveInput.x);
+            }
         }
 
         // Reset jump pressed & released at the end of frame so it only affects 1 frame when pressed
@@ -73,12 +104,124 @@ public class PlayerController : MonoBehaviour
         else
             jumpReleased = true;
     }
+
+    private void OnSprint(InputValue value)
+    {
+        sprintInput = value.Get<float>() > 0;
+    }
     #endregion
+
+    public void OnWallTriggerEnter(Direction direction)
+    {
+        isWallJumping = false;
+
+        switch (direction)
+        {
+            case Direction.Left:
+                isWalledLeft = true;
+                break;
+
+            case Direction.Right:
+                isWalledRight = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public void OnWallTriggerExit(Direction direction)
+    { 
+        switch (direction)
+        {
+            case Direction.Left:
+                isWalledLeft = false;
+                rb.gravityScale = gravityScale;
+                break;
+
+            case Direction.Right:
+                isWalledRight = false;
+                rb.gravityScale = gravityScale;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void MoveFixed(float direction)
+    {
+        // Normalise direction
+        if (direction > 0)
+            direction = 1;
+        else if (direction < 0)
+            direction = -1;
+        else
+            direction = 0;
+
+        //rb.linearVelocityX = direction * moveSpeed * (sprintInput ? sprintSpeedMultiplier : 1);
+        rb.AddForce(new Vector2(direction * acceleration * (sprintInput ? sprintSpeedMultiplier : 1), 0));
+        float maxSpeed = sprintInput || !isGrounded ? moveSpeed * sprintSpeedMultiplier : moveSpeed;
+        rb.linearVelocityX = Mathf.Clamp(rb.linearVelocityX, -maxSpeed, maxSpeed);
+    }
+
+    private void SetMovement(float direction)
+    {
+        // Normalise direction
+        if (direction > 0)
+            direction = 1;
+        else if (direction < 0)
+            direction = -1;
+        else
+            direction = 0;
+
+        rb.linearVelocityX = direction * moveSpeed * (sprintInput ? sprintSpeedMultiplier : 1);
+    }
+
+    private void DecelerateFixed()
+    {
+        float sign = Mathf.Sign(rb.linearVelocityX);
+        float decelAmount = rb.linearVelocityX * (1 - decelerationMultiplier);
+        rb.linearVelocityX += decelAmount * Time.fixedDeltaTime;
+        if (Mathf.Sign(rb.linearVelocityX) != sign)
+            rb.linearVelocityX = 0;
+    }
 
     private void Jump()
     {
         rb.linearVelocityY = jumpSpeed;
         timeInJump += Time.fixedDeltaTime;
+    }
+
+    private void ResetJumps()
+    {
+        timeInJump = 0;
+        jumpsLeft = numberOfJumps;
+    }
+
+    private void HandleWallHangFixed()
+    {
+        // Do nothing if grounded
+        if (isGrounded)
+            return;
+
+        if ((isWalledLeft && moveInput.x < 0) || (isWalledRight && moveInput.x > 0))
+        {
+            rb.gravityScale = 0;
+            rb.linearVelocityY = 0;
+            ResetJumps();
+
+            if (jumpPressed)
+            {
+                isWallJumping = true;
+                Jump();
+                SetMovement(-moveInput.x);
+            }
+        }
+        else
+        {
+            rb.gravityScale = gravityScale;
+        }
     }
 
     private void HandleJumpFixed()
@@ -108,6 +251,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
     private void CheckGrounded()
     {
         Vector2 rayStart = collider.bounds.center;
@@ -117,4 +261,9 @@ public class PlayerController : MonoBehaviour
             rayLength, groundLayers);
         isGrounded = hit.collider != null;
     }
+}
+
+public enum Direction
+{
+    Left, Right, Up, Down
 }
