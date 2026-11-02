@@ -16,8 +16,10 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 moveInput;
     private bool jumpInput;
+    private bool jumpPressed;
+    private bool jumpReleased;
     private bool isGrounded;
-    private bool isJumping;
+    private bool canJump;
     private int jumpsLeft;
     private float xVelocity;
     private float timeInJump;
@@ -32,22 +34,25 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         CheckGrounded();
+
+        // Reset jumping if on ground
         if (isGrounded)
         {
             timeInJump = 0;
             jumpsLeft = numberOfJumps;
         }
 
+        // Horizontal movement
         rb.linearVelocityX = moveInput.x * moveSpeed;
 
-        if (jumpInput)
+        if (jumpInput || jumpReleased)
         {
             HandleJumpFixed();
         }
-        else
-        {
-            isJumping = false;
-        }
+
+        // Reset jump pressed & released at the end of frame so it only affects 1 frame when pressed
+        jumpPressed = false;
+        jumpReleased = false;
     }
     #endregion
 
@@ -61,34 +66,48 @@ public class PlayerController : MonoBehaviour
     private void OnJump(InputValue value)
     {
         jumpInput = value.Get<float>() > 0;
+
+        // Jump pressed and released, needs resetting at end of frame
+        if (jumpInput)
+            jumpPressed = true;
+        else
+            jumpReleased = true;
     }
     #endregion
 
-    private void HandleJumpFixed()
+    private void Jump()
     {
-        if (isGrounded)
-        {
-            isJumping = true;
-            jumpsLeft--;
-        }
-        else if (!isJumping && jumpsLeft > 0)
-        {
-            isJumping = true;
-            timeInJump = 0;
-            jumpsLeft--;
-        }
-
-        if (isJumping && timeInJump < maxJumpTime)
-        {
-            timeInJump += Time.fixedDeltaTime;
-            rb.linearVelocityY = jumpSpeed;
-        }
-        else
-        {
-            isJumping = false;
-        }
+        rb.linearVelocityY = jumpSpeed;
+        timeInJump += Time.fixedDeltaTime;
     }
 
+    private void HandleJumpFixed()
+    {
+        // If jump is released, no more extended jump allowance
+        if (jumpReleased)
+        {
+            timeInJump = maxJumpTime;
+        }
+
+        // If first frame of jump, deduct jump and reset extended jump allowance
+        if (jumpPressed)
+        {
+            if (jumpsLeft > 0)
+            {
+                Jump();
+                jumpsLeft--;
+                timeInJump = 0;
+            }
+        }
+        // If holding jump, apply extended jump
+        else
+        {
+            if (timeInJump < maxJumpTime)
+            {
+                Jump();
+            }
+        }
+    }
     private void CheckGrounded()
     {
         Vector2 rayStart = collider.bounds.center;
