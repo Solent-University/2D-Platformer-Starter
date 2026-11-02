@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 1;
     public float jumpSpeed = 1;
+    public int numberOfJumps = 2;
     public float maxJumpTime = 0.1f;
     public LayerMask groundLayers;
 
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour
     private bool jumpInput;
     private bool isGrounded;
     private bool isJumping;
+    private int jumpsLeft;
     private float xVelocity;
     private float timeInJump;
 
@@ -31,7 +33,10 @@ public class PlayerController : MonoBehaviour
     {
         CheckGrounded();
         if (isGrounded)
+        {
             timeInJump = 0;
+            jumpsLeft = numberOfJumps;
+        }
 
         rb.linearVelocityX = moveInput.x * moveSpeed;
 
@@ -64,12 +69,23 @@ public class PlayerController : MonoBehaviour
         if (isGrounded)
         {
             isJumping = true;
+            jumpsLeft--;
+        }
+        else if (!isJumping && jumpsLeft > 0)
+        {
+            isJumping = true;
+            timeInJump = 0;
+            jumpsLeft--;
         }
 
         if (isJumping && timeInJump < maxJumpTime)
         {
             timeInJump += Time.fixedDeltaTime;
             rb.linearVelocityY = jumpSpeed;
+        }
+        else
+        {
+            isJumping = false;
         }
     }
 
