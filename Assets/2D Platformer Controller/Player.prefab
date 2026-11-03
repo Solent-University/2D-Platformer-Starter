@@ -52,7 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 4
   acceleration: 4
-  decelerationMultiplier: 20
+  decelerationMultiplier: 10
   sprintSpeedMultiplier: 2
   jumpSpeed: 7
   numberOfJumps: 2

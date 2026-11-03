@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     public float decelerationMultiplier = 1;
     public float sprintSpeedMultiplier = 2;
     public float jumpSpeed = 1;
-    public int numberOfJumps = 2;
+    public int numberOfAirJumps = 1;
     public float maxJumpTime = 0.1f;
     public LayerMask groundLayers;
 
@@ -196,7 +196,7 @@ public class PlayerController : MonoBehaviour
     private void ResetJumps()
     {
         timeInJump = 0;
-        jumpsLeft = numberOfJumps;
+        jumpsLeft = numberOfAirJumps;
     }
 
     private void HandleWallHangFixed()
@@ -235,7 +235,12 @@ public class PlayerController : MonoBehaviour
         // If first frame of jump, deduct jump and reset extended jump allowance
         if (jumpPressed)
         {
-            if (jumpsLeft > 0)
+            if (isGrounded)
+            {
+                Jump();
+                timeInJump = 0;
+            }
+            else if (jumpsLeft > 0)
             {
                 Jump();
                 jumpsLeft--;
