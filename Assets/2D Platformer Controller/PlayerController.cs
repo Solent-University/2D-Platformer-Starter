@@ -51,6 +51,8 @@ public class PlayerController : MonoBehaviour
         {
             ResetJumps();
             isWallJumping = false;
+            OnWallTriggerExit(Direction.Left);
+            OnWallTriggerExit(Direction.Right);
         }
 
         if (isWalledLeft || isWalledRight)
