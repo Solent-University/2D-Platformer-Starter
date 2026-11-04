@@ -66,7 +66,7 @@ public class PlayerController : MonoBehaviour
         if (!isWallJumping)
         {
             // I hate this line but it handles no input and opposite input for deceleration
-            if (moveInput.x == 0 || Mathf.Abs(rb.linearVelocityX) > 0.1f && Mathf.Sign(moveInput.x) != Mathf.Sign(rb.linearVelocityX))
+            if (moveInput.x == 0 || (Mathf.Abs(rb.linearVelocityX) > 0.1f && Mathf.Sign(moveInput.x) != Mathf.Sign(rb.linearVelocityX)) && isGrounded)
             {
                 // Deceleration
                 if (isGrounded)
@@ -152,14 +152,8 @@ public class PlayerController : MonoBehaviour
     private void MoveFixed(float direction)
     {
         // Normalise direction
-        if (direction > 0)
-            direction = 1;
-        else if (direction < 0)
-            direction = -1;
-        else
-            direction = 0;
+        direction = Mathf.Sign(direction);
 
-        //rb.linearVelocityX = direction * moveSpeed * (sprintInput ? sprintSpeedMultiplier : 1);
         rb.AddForce(new Vector2(direction * acceleration * (sprintInput ? sprintSpeedMultiplier : 1), 0));
         float maxSpeed = sprintInput || !isGrounded ? moveSpeed * sprintSpeedMultiplier : moveSpeed;
         rb.linearVelocityX = Mathf.Clamp(rb.linearVelocityX, -maxSpeed, maxSpeed);
@@ -168,12 +162,7 @@ public class PlayerController : MonoBehaviour
     private void SetMovement(float direction)
     {
         // Normalise direction
-        if (direction > 0)
-            direction = 1;
-        else if (direction < 0)
-            direction = -1;
-        else
-            direction = 0;
+        direction = Mathf.Sign(direction);
 
         rb.linearVelocityX = direction * moveSpeed * (sprintInput ? sprintSpeedMultiplier : 1);
     }
