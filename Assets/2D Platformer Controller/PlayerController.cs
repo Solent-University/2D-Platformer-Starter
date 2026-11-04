@@ -115,6 +115,9 @@ public class PlayerController : MonoBehaviour
     {
         isWallJumping = false;
 
+        if (isGrounded)
+            return;
+
         switch (direction)
         {
             case Direction.Left:
