@@ -234,6 +234,7 @@ public class PlayerController : MonoBehaviour
                 Jump();
                 jumpsLeft--;
                 timeInJump = 0;
+                isWallJumping = false; // Allows movement after jumping off a wall on the 2nd jump
             }
         }
         // If holding jump, apply extended jump
