@@ -255,8 +255,8 @@ public class PlayerController : MonoBehaviour
     private void CheckGrounded()
     {
         Vector2 rayStart = collider.bounds.center;
-        float rayRadius = (collider.size.x/2 * transform.localScale.x) * 0.95f;
-        float rayLength = 0.55f * (collider.size.y / 2) * transform.localScale.y;
+        float rayRadius = (collider.size.x/2 * transform.lossyScale.x) * 0.95f;
+        float rayLength = 0.55f * (collider.size.y / 2) * transform.lossyScale.y;
         RaycastHit2D hit = Physics2D.CircleCast(rayStart, rayRadius, Vector2.down,
             rayLength, groundLayers);
         isGrounded = hit.collider != null;
