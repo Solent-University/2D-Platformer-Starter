@@ -30,7 +30,7 @@ public class MovingPlatform : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
         Gizmos.DrawSphere(pointA, 0.5f);
@@ -53,7 +53,6 @@ public class MovingPlatform : MonoBehaviour
     {
         if (collision.collider.tag == "Player")
         {
-            Debug.Log(collision.contacts[0].normal);
             if (collision.contacts[0].normal == Vector2.down)
             {
                 collision.transform.parent = transform;
