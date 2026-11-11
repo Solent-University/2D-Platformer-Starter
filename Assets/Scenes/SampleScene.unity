@@ -1225,8 +1225,9 @@ GameObject:
   - component: {fileID: 760847395}
   - component: {fileID: 760847394}
   - component: {fileID: 760847393}
+  - component: {fileID: 760847396}
   m_Layer: 0
-  m_Name: Floor (10)
+  m_Name: Timed Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1353,6 +1354,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &760847396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760847392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc8a33044247bd74fad3fa9f933dd07a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallingPlatform
+  timeToFall: 1
+  respawn: 0
+  respawnTime: 1
 --- !u!1 &843987746
 GameObject:
   m_ObjectHideFlags: 0
@@ -2538,7 +2554,6 @@ SceneRoots:
   - {fileID: 1042792404}
   - {fileID: 104315425}
   - {fileID: 1846359429}
-  - {fileID: 760847395}
   - {fileID: 325870765}
   - {fileID: 230598418}
   - {fileID: 1750275023}
@@ -2551,3 +2566,4 @@ SceneRoots:
   - {fileID: 1468652349}
   - {fileID: 2000504527376145498}
   - {fileID: 612917215}
+  - {fileID: 760847395}
