@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -257,9 +258,17 @@ public class PlayerController : MonoBehaviour
         Vector2 rayStart = collider.bounds.center;
         float rayRadius = (collider.size.x/2 * transform.lossyScale.x) * 0.95f;
         float rayLength = 0.55f * (collider.size.y / 2) * transform.lossyScale.y;
-        RaycastHit2D hit = Physics2D.CircleCast(rayStart, rayRadius, Vector2.down,
-            rayLength, groundLayers);
-        isGrounded = hit.collider != null;
+        ContactFilter2D contactFilter = new ContactFilter2D()
+        {
+            useTriggers=false,
+            useLayerMask=true,
+            layerMask=groundLayers,
+            
+        };
+        List<RaycastHit2D> hits = new List<RaycastHit2D>();
+        int hitCount = Physics2D.CircleCast(rayStart, rayRadius, Vector2.down,
+            contactFilter, hits, rayLength);
+        isGrounded = hitCount > 0;
     }
 }
 
